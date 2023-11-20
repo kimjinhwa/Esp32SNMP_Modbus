@@ -528,13 +528,13 @@ void megatechRequest(void *parameter)
     uint8_t upsKind = 3;
     ups_modbus_data.Input_Phase = 3;
     ups_modbus_data.Output_Phase =1;
-    //
-    digitalWrite(33, OPLED_OFF);
+    
+    //digitalWrite(33, OPLED_OFF);
     while ((ledStatus = I_Command()) == 0)
     {
         selectPrintf(0, "Can not read I command\n\r");
         ledStatus = Q1_Command();
-        digitalWrite(33, ledStatus ? OPLED_ON : OPLED_OFF);
+        //digitalWrite(33, ledStatus ? OPLED_ON : OPLED_OFF);
         vTaskDelay(500);
     }
     vTaskDelay(200);
@@ -553,7 +553,7 @@ void megatechRequest(void *parameter)
         {
             vTaskDelay(100);
             ledStatus = Q1_Command();
-            digitalWrite(33, ledStatus ? OPLED_ON : OPLED_OFF);
+            //digitalWrite(33, ledStatus ? OPLED_ON : OPLED_OFF);
             if (ups_modbus_data.Input_Phase == 3)
             {
                 vTaskDelay(100);
@@ -566,7 +566,7 @@ void megatechRequest(void *parameter)
             }
             setKepSnmpValue();
             now = millis();
-            digitalWrite(33, OPLED_OFF);
+            //digitalWrite(33, OPLED_OFF);
         }
         vTaskDelay(1);
     }

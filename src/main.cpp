@@ -5,7 +5,6 @@
 #include <Wifi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
-// #include <ESPmDNS.h>
 #include <Update.h>
 #include <EEPROM.h>
 #include <ThreeWire.h>
@@ -47,6 +46,9 @@
 #define OP_LED 33
 
 #define USE_SERIAL Serial
+#define WEB_PORT 80
+#define WEBSOCKET_PORT 81
+#define TELNET_PORT 23
 
 modbusRtu rtu485;
 int8_t debugFlag = 0;
@@ -86,9 +88,8 @@ Command cmd_ls_config;
 
 ThreeWire myWire(15, 32, OP_LED); // IO, SCLK, CE
 RtcDS1302<ThreeWire> Rtc(myWire);
-
-WebSocketsServer webSocket = WebSocketsServer(81);
-WebServer webServer(80);
+WebSocketsServer webSocket = WebSocketsServer(WEBSOCKET_PORT);
+WebServer webServer(WEB_PORT );
 // void onBTConnect(esp_spp_cb_event_t event, esp_spp_cb_param_t *param);
 bool saveSNMPValues();
 bool check_useridpass(String userid, String passwd);
@@ -116,8 +117,7 @@ int log_printf_telnet(const char *fmt, ...);
 // typedef int (*vprintf_like_t)(const char *, va_list);
 //  EthernetClient Client;
 WiFiClient Client;
-
-WiFiServer telnetServer(23);
+WiFiServer telnetServer(TELNET_PORT );
 
 IPAddress ipaddress(192, 168, 0, 57);
 IPAddress gateway(192, 168, 0, 1);
@@ -1660,7 +1660,7 @@ int EthLan8720Start()
     }
   }
   printf("\r\nConnected\r\n");
-  //telnetServer.begin();
+  telnetServer.begin();
   // server.setNoDelay(true);
   printf("\r\nReady! Use 'telnet ");
   printf(ETH.localIP().toString().c_str());
@@ -1868,14 +1868,6 @@ FILE *fUpdate;
 int UpdateSize;
 void serverOnset()
 {
-  // if (!MDNS.begin(host))
-  // { // http://esp32.local
-  //   printf("Error setting up MDNS responder!");
-  //   while (1)
-  //   {
-  //     delay(1000);
-  //   }
-  // }
   webServer.on("/style.css", HTTP_GET, []()
                { readFileToWeb("text/css", "/spiffs/style.css"); });
 
@@ -2484,21 +2476,18 @@ void setup()
   {
     printf("\r\nEthernet connection succeed");
   }
-//   // printf("\r\nmDNS responder started");
-//   serverOnset();
-//   printf("\r\nWebServer Begin");
-//   //webServer.begin();
-//   // setIpaddressToEthernet();
-//   SimpleCLISetUp();
-//   //webSocket.begin();
-//   webSocket.onEvent(webSocketEvent);
-//   // stdout = fwopen(NULL, &telnet_print);
+  serverOnset();
+  printf("\r\nWebServer Begin");
+  webServer.begin();
+  setIpaddressToEthernet();
+  SimpleCLISetUp();
+  webSocket.begin();
+  webSocket.onEvent(webSocketEvent);
 
-//   xTaskCreate(snmpRequest, "snmptech", 10240, NULL, 1, h_pxSnmp);
-//   xTaskCreate(telnetTask, "telnetTask", 10240, NULL, 1, h_pxTelnetTask);
-//   xTaskCreate(megatechRequest, "megatech", 10240, NULL, 1, h_pxMegatech);
+  xTaskCreate(snmpRequest, "snmptech", 10240, NULL, 1, h_pxSnmp);
+  xTaskCreate(megatechRequest, "megatech", 10240, NULL, 1, h_pxMegatech);
+  xTaskCreate(telnetTask, "telnetTask", 10240, NULL, 1, h_pxTelnetTask);
 //   // 7168 8192 10240
-//   //  modBusRtuSetup();
 //   cli.parse("user");
 //   // esp_log_level_set("*", ESP_LOG_VERBOSE);
 //   esp_log_level_set("*", ESP_LOG_ERROR);
@@ -2516,13 +2505,13 @@ unsigned long now;
 
 void loop()
 {
-  //webServer.handleClient();
+  webServer.handleClient();
   rtu485.receiveData();
   // while (1)
   {
-    //webSocket.loop();
-    // if (SerialBT.available())
-    //   readInputSerialBT();
+    webSocket.loop();
+    if (SerialBT.available())
+      readInputSerialBT();
     now = millis();
     if ((now - previousmills > everySecondInterval))
     {
