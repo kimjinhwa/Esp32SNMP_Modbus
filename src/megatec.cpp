@@ -392,6 +392,7 @@ int T_Command(int minute){
     Serial.flush();
     Serial.setTimeout(1000);
     String readString = Serial.readStringUntil(0x0d);
+    return 1;
 }
 int I_Command()
 {
@@ -536,7 +537,6 @@ void megatechRequest(void *parameter)
         digitalWrite(33, ledStatus ? OPLED_ON : OPLED_OFF);
         vTaskDelay(500);
     }
-    digitalWrite(33, OPLED_ON);
     vTaskDelay(200);
     F_Command();
     vTaskDelay(200);

@@ -5,6 +5,15 @@
 #define TX2_PIN 12   // Serial2 RX 핀 (GPIO12)
 #define RX2_PIN 14   // Serial2 TX 핀 (GPIO14)
 
+//사용법
+//#include "modbusRtu.h"
+//전역
+//modbusRtu rtu485;
+//setup
+// rtu485.modbusInit();
+//  pinMode(OP_LED , OUTPUT);
+//loop
+//  rtu485.receiveData();
 
 enum Error : uint8_t {
   SUCCESS                = 0x00,

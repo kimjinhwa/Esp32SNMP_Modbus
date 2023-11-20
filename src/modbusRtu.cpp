@@ -133,7 +133,7 @@ void modbusRtu::receiveData()
         }
         if (state == IN_PACKET)
         {
-          if (micros() - lastMicros >= (Serial2.baudRate() / 8)*10)
+          if (micros() - lastMicros >= (1.0/(float)Serial2.baudRate() )*1000.0*1000.0*100.0)
           {
             state = DATA_READ;
             break;
@@ -255,12 +255,13 @@ void modbusRtu::F06(uint8_t *buffer,uint16_t len ){
     return;
   }
   //SendTestCommand(singleDataToWrite);
-  T_Command(singleDataToWrite);
-  // uint16_t *modbusData =(uint16_t *)&ups_modbus_data;
-  // modbusData[dataRequestAddress] =singleDataToWrite; 
+  uint16_t *modbusData =(uint16_t *)&ups_modbus_data;
+  modbusData[dataRequestAddress] =singleDataToWrite; 
   digitalWrite(OP_LED, 1);
   Serial2.write(buffer,len);
   delay(1);
   Serial2.flush();
   digitalWrite(OP_LED, 0);
+  if(dataRequestAddress)
+    T_Command(singleDataToWrite);
 };
