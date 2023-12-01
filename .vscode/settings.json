@@ -13,5 +13,6 @@
         "random": "cpp",
         "initializer_list": "cpp",
         "regex": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "C:/Users/ServerManager/OneDrive/문서/PlatformIO/Projects/Esp32SNMP_Modbus/.pio/libdeps/SNMP-DEBUG/ArduinoJson"
 }

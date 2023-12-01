@@ -1,13 +1,20 @@
 # SNMP FOR UPS 
 AC & T의 요구사항에 의해서 작성한다. 
+- telnet debug monitering이 가능하다. 
+- bluetooth monitering이 가능하다. 
+- web서버 기능이 있다. 
+- snmp기능을 제공한다. 
+- modbus통신을 지원한다. 
+- megatec보드와 2400으로 통신을 한다.
+
 
 
 1. 60초마다 커넥션은 다시 해야 한다. 
 2. 최대 동시사용은 4이다.
+
 1. include https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js file into code.  
    not anymore upload into esp32 flash memory.
 2. Upload html list.
-
 - index.html
 -
 

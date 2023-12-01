@@ -22,7 +22,9 @@
 4 G3 UPS real time data for 3 phase
 6 GF UPS Rating Information
 */
+#define SET_TIMEOUT 300
 static const unsigned long UPTIME_UPDATE_INTERVAL = 1000; // ms = 1 second
+
 static unsigned long lastUptimeUpdateTime = 0;
 
 GF_UpsRatingInfo_t GF_UpsRatingInfo;
@@ -55,16 +57,16 @@ void selectPrintf(uint sel, const char *format, ...);
 //     !240 094 0123 025.0 +35.0 60.1 62.0 60.0<cr>
 int G1_Command()
 {
-    selectPrintf(2, "%s", "G1\n\r");
+    //selectPrintf(2, "%s", "G1\n\r");
     if (ups_modbus_data.Input_Phase != 3)
         return 0;
     Serial.print("G1\r");
     Serial.flush();
-    Serial.setTimeout(1000);
+    Serial.setTimeout(SET_TIMEOUT );
     String readString = Serial.readStringUntil(0x0d);
     if (readString.length() == 0)
         return 0;
-    selectPrintf(2, "%s", readString.c_str());
+    //selectPrintf(2, "%s", readString.c_str());
     strlcpy(G1_realtimedata.receiveData, readString.c_str(), sizeof(G1_realtimedata.receiveData));
     // 문자열 분리 및 숫자 값 추출
     int pos1 = 1, pos2 = 0; // # 다음의 인덱스부터 시작
@@ -121,17 +123,17 @@ int G1_Command()
 // UPS :!a7a6a5a4a3a2a1a0 b7b6b5b4b3b2b1b0 c7c6c5c4c3c2c1c0<cr>
 int G2_Command()
 {
-    selectPrintf(2, "%s", "G2\n\r");
+    //selectPrintf(2, "%s", "G2\n\r");
     if (ups_modbus_data.Input_Phase != 3)
         return 0;
     Serial.print("G2\r");
     Serial.flush();
-    Serial.setTimeout(1000);
+    Serial.setTimeout(SET_TIMEOUT );
     String readString = Serial.readStringUntil(0x0d);
     if (readString.length() == 0)
         return 0;
 
-    selectPrintf(2, "\n\rG2 %s", readString.c_str());
+    //selectPrintf(2, "\n\rG2 %s", readString.c_str());
     strlcpy(G2_UpsStatus.receiveData, readString.c_str(), sizeof(G2_UpsStatus.receiveData));
     int pos1, pos2 = 0; // ! 다음의 인덱스부터 시작
 
@@ -166,16 +168,16 @@ extern kep_value_st kep_value;
 extern char *kepChargeMode;
 int G3_Command()
 {
-    selectPrintf(2, "%s", "G3\n\r");
+    //selectPrintf(2, "%s", "G3\n\r");
     if (ups_modbus_data.Input_Phase != 3)
         return 0;
     Serial.print("G3\r");
     Serial.flush();
-    Serial.setTimeout(1000);
+    Serial.setTimeout(SET_TIMEOUT );
     String readString = Serial.readStringUntil(0x0d);
     if (readString.length() == 0)
         return 0;
-    selectPrintf(2, "\n\rG3 %s", readString.c_str());
+    //selectPrintf(2, "\n\rG3 %s", readString.c_str());
     strlcpy(G3_3P_realtimeData.receiveData, readString.c_str(), sizeof(G3_3P_realtimeData.receiveData));
     // 문자열 분리 및 값 추출
     int pos1, pos2 = 0; // ! 다음의 인덱스부터 시작
@@ -228,17 +230,17 @@ int G3_Command()
 // UPS : !220V/380V^3P4W 060 220V/380V^3P4W 061 220V/3P3W^^^^^ 060 396 150KVA^^^^<cr>
 int GF_Command()
 {
-    selectPrintf(2, "%s", "GF\n\r");
+    //selectPrintf(2, "%s", "GF\n\r");
     if (ups_modbus_data.Input_Phase != 3)
         return 0;
     Serial.print("GF\r");
     Serial.flush();
-    Serial.setTimeout(1000);
+    Serial.setTimeout(SET_TIMEOUT );
     String readString = Serial.readStringUntil(0x0d);
     if (readString.length() == 0)
         return 0;
     //
-    selectPrintf(2, "\n\rGF %s", readString.c_str());
+    //selectPrintf(2, "\n\rGF %s", readString.c_str());
     strlcpy(GF_UpsRatingInfo.receiveData, readString.c_str(), sizeof(GF_UpsRatingInfo.receiveData));
     int startpos = 1; // # 다음의 인덱스부터 시작
     int endpos;
@@ -305,15 +307,16 @@ int GF_Command()
 // (MMM.M NNN.N PPP.P QQQ RR.R S.SS TT.T b7b6b5b4b3b2b1b0<cr>
 int Q1_Command()
 {
-    selectPrintf(2, "%s", "Q1\n\r");
+    //selectPrintf(2, "%s", "Q1\n\r");
     Serial.print("Q1\r");
     Serial.flush();
-    Serial.setTimeout(1000);
+    Serial.setTimeout(SET_TIMEOUT );
     String readString = Serial.readStringUntil(0x0d);
+    //selectPrintf(0, "Q1:%s",readString.c_str() );
     if (readString.length() == 0)
         return 0;
-    selectPrintf(2, "\n\rQ1 %s", readString.c_str());
-    selectPrintf(2, "\n\r");
+    //selectPrintf(2, "\n\rQ1 %s", readString.c_str());
+    //selectPrintf(2, "\n\r");
     // 문자열 분리 및 숫자 값 추출
     strlcpy(Q1_status.receiveData, readString.c_str(), sizeof(Q1_status.receiveData));
     //      5
@@ -390,7 +393,7 @@ int Q1_Command()
 int T_Command(int minute){
     Serial.printf("T%2d\r",minute);
     Serial.flush();
-    Serial.setTimeout(1000);
+    Serial.setTimeout(SET_TIMEOUT );
     String readString = Serial.readStringUntil(0x0d);
     return 1;
 }
@@ -401,11 +404,12 @@ int I_Command()
     selectPrintf(2, "I\r");
     Serial.print("I\r");
     Serial.flush();
-    Serial.setTimeout(1000);
+    Serial.setTimeout(SET_TIMEOUT );
     String readString = Serial.readStringUntil(0x0d);
     if (readString.length() == 0)
         return 0;
     selectPrintf(2, "\n\rI %s", readString.c_str());
+    selectPrintf(0, "\n\rI %s", readString.c_str());
     strlcpy(megatechUpsInfo.receiveData, readString.c_str(), readString.length());
     // "Company_Name" 추출
     selectPrintf(2, "%s", readString.c_str());
@@ -432,10 +436,11 @@ int F_Command()
     selectPrintf(2, "%s", "F\n\r");
     Serial.print("F\r");
     Serial.flush();
-    Serial.setTimeout(1000);
+    Serial.setTimeout(SET_TIMEOUT );
     String readString = Serial.readStringUntil(0x0d);
     if (readString.length() == 0)
         return 0;
+    selectPrintf(0, "Q1:%s",readString.c_str() );
     selectPrintf(2, "\n\rF %s", readString.c_str());
     // 문자열 분리 및 숫자 값 추출
     int pos1 = 1; // # 다음의 인덱스부터 시작
@@ -526,7 +531,7 @@ void megatechRequest(void *parameter)
     unsigned long now = 0;
     u_int8_t ledStatus = 0;
     uint8_t upsKind = 3;
-    ups_modbus_data.Input_Phase = 3;
+    ups_modbus_data.Input_Phase = 1;
     ups_modbus_data.Output_Phase =1;
     
     //digitalWrite(33, OPLED_OFF);
@@ -537,6 +542,7 @@ void megatechRequest(void *parameter)
         //digitalWrite(33, ledStatus ? OPLED_ON : OPLED_OFF);
         vTaskDelay(500);
     }
+
     vTaskDelay(200);
     F_Command();
     vTaskDelay(200);
@@ -547,23 +553,31 @@ void megatechRequest(void *parameter)
     }
     //    upsKind = 1;
     vTaskDelay(200);
+    //이상하다 강제로 단상으로 우선은 맞추어 준다. 
+    // 교하 제품의 특색인가?
+    ups_modbus_data.Input_Phase = 1;
+    ups_modbus_data.Output_Phase =1;
     while (1)
     {
         if (millis() - now >= UPTIME_UPDATE_INTERVAL)
         {
             vTaskDelay(100);
             ledStatus = Q1_Command();
+            //selectPrintf(0, "readOk Q1_Command\n\r");
             //digitalWrite(33, ledStatus ? OPLED_ON : OPLED_OFF);
-            if (ups_modbus_data.Input_Phase == 3)
-            {
-                vTaskDelay(100);
-                G1_Command();
-                vTaskDelay(100);
-                G2_Command();
-                vTaskDelay(100);
-                G3_Command();
-                vTaskDelay(100);
-            }
+            // if (ups_modbus_data.Input_Phase == 3)
+            // {
+            //     vTaskDelay(100);
+            //     G1_Command();
+            //     vTaskDelay(100);
+            //     G2_Command();
+            //     vTaskDelay(100);
+            //     G3_Command();
+            //     vTaskDelay(100);
+            //     selectPrintf(0, "system is 3PxP\n\r");
+            // }
+            // else 
+                //selectPrintf(0, "system is 1P1P\n\r");
             setKepSnmpValue();
             now = millis();
             //digitalWrite(33, OPLED_OFF);

@@ -200,9 +200,7 @@ void TCPstub::workerTask(TCPstub *instance) {
             TCPhead[i++] = byte;
           }
           instance->inQueue.pop();
-          // Serial.printf("%02X ", byte);
         }
-        // Serial.println((*instance->tm).size());
       }
       // Get the TID
       tid = ((TCPhead[0] << 8) & 0xFF) | (TCPhead[1] & 0xFF);
@@ -216,7 +214,6 @@ void TCPstub::workerTask(TCPstub *instance) {
         // Does the test case prescribe an initial delay?
         if (myTest->delayTime) {
           // Yes. idle until time has passed
-          // Serial.printf("Wait for %d\n", myTest->delayTime);
           delay(myTest->delayTime);
         }
         // Do we have to send a response?

@@ -1738,12 +1738,12 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
   switch (type)
   {
   case WStype_DISCONNECTED:
-    printf("[%u] Disconnected!\r\n", num);
+    ESP_LOGI(TAG, "[%u] Disconnected!\r\n", num);
     break;
   case WStype_CONNECTED:
   {
     IPAddress ip = webSocket.remoteIP(num);
-    printf("[%u] Connected from %d.%d.%d.%d url: %s\r\n", num, ip[0], ip[1], ip[2], ip[3], payload);
+    selectPrintf(0,"[%u] Connected from %d.%d.%d.%d url: %s\r\n", num, ip[0], ip[1], ip[2], ip[3], payload);
 
     // send message to client
     // object = doc_tx.to<JsonObject>();
@@ -2335,7 +2335,6 @@ void readInputSerialBT()
         setOutputDirection = BLUETOOTH;
         cli.parse(input);
         setOutputDirection = NONE;
-        // while (Serial.available())
         SerialBT.readBytes(readBuf, 1);
         input = "";
         SerialBT.printf("\n# ");
@@ -2405,7 +2404,6 @@ void telnetTask(void *parameter)
 {
   while (1)
   {
-    // selectPrintf(0, "here");
     telnetServerCheckClient();
     vTaskDelay(5);
   }
@@ -2435,14 +2433,12 @@ void setup()
 #else
   Serial.begin(ipAddress_struct.BAUDRATE);
 #endif
-  //Wire.begin();
-
   String macAddress = WiFi.macAddress();
   macAddress.replace(":", "");
   SerialBT.begin("IFTECH_" + macAddress);
   callback = onBTConnect;
   SerialBT.register_callback(&callback);
-  // Serial.begin(115200);
+
   EEPROM.begin(100);
   setRtc();
 
@@ -2465,12 +2461,12 @@ void setup()
   if (EthLan8720Start())
   {
     printf("\r\nWiFi.softAPConfig");
-    // WiFi.softAPConfig(IPAddress(192, 168, 11, 1), IPAddress(192, 168, 11, 1), IPAddress(255, 255, 255, 0));
-    // printf("\r\nWiFi.mode(WIFI_MODE_AP)");
-    // WiFi.mode(WIFI_MODE_AP);
-    // macAddress = String(soft_ap_ssid) + macAddress;
-    // printf("\r\nWiFi.softAP(soft_ap_ssid, soft_ap_password)");
-    // WiFi.softAP(macAddress.c_str(), soft_ap_password);
+    //WiFi.softAPConfig(IPAddress(192, 168, 11, 1), IPAddress(192, 168, 11, 1), IPAddress(255, 255, 255, 0));
+    printf("\r\nWiFi.mode(WIFI_MODE_AP)");
+    //WiFi.mode(WIFI_MODE_AP);
+    //macAddress = String(soft_ap_ssid) + macAddress;
+    printf("\r\nWiFi.softAP(soft_ap_ssid, soft_ap_password)");
+    //WiFi.softAP(macAddress.c_str(), soft_ap_password);
   }
   else
   {
@@ -2488,35 +2484,31 @@ void setup()
   xTaskCreate(megatechRequest, "megatech", 10240, NULL, 1, h_pxMegatech);
   xTaskCreate(telnetTask, "telnetTask", 10240, NULL, 1, h_pxTelnetTask);
 //   // 7168 8192 10240
-//   cli.parse("user");
+  cli.parse("user");
 //   // esp_log_level_set("*", ESP_LOG_VERBOSE);
-//   esp_log_level_set("*", ESP_LOG_ERROR);
+//  esp_log_level_set("*", ESP_LOG_ERROR);
 //   // esp_log_set_vprintf(telnet_write);
 }
 
 int interval = 1000;
-
 unsigned long previousmills = 0;
 int everySecondInterval = 1000;
 unsigned long now;
-// C:\Users\STELLA\.platformio\packages\framework-arduinoespressif32@3.20006.221224\tools\sdk\esp32\qio_qspi\include\sdkconfig.h
-// int16_t rRequest[5]
-//
 
 void loop()
 {
   webServer.handleClient();
-  rtu485.receiveData();
-  // while (1)
+  webSocket.loop();
+  if(Serial2.available()) rtu485.receiveData();
+  if (SerialBT.available()) readInputSerialBT();
+  now = millis();
+  if ((now - previousmills > everySecondInterval))
   {
-    webSocket.loop();
-    if (SerialBT.available())
-      readInputSerialBT();
-    now = millis();
-    if ((now - previousmills > everySecondInterval))
-    {
-      previousmills = now;
-    }
-    vTaskDelay(10);
+    previousmills = now;
   }
+  vTaskDelay(10);
 }
+
+// C:\Users\STELLA\.platformio\packages\framework-arduinoespressif32@3.20006.221224\tools\sdk\esp32\qio_qspi\include\sdkconfig.h
+// int16_t rRequest[5]
+//
