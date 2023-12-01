@@ -1169,8 +1169,8 @@ void upstype_configCallback(cmd *cmdPtr)
     ups_modbus_data.Output_Phase = 3;
     break;
   default:
-    selectPrintf(0, "\nWrong UPS TYPE , Set to 3P1P");
-    ups_modbus_data.Input_Phase = 3;
+    selectPrintf(0, "\nWrong UPS TYPE , Set to 1P1P");
+    ups_modbus_data.Input_Phase = 1;
     ups_modbus_data.Output_Phase = 1;
     break;
   }
