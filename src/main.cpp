@@ -2424,7 +2424,6 @@ void setup()
   int isEthernetConnect = false;
   pinMode(OP_LED, OUTPUT);
   rtu485.modbusInit();
-
   readnWriteEEProm();
 #ifdef S115200
   Serial.begin(115200);

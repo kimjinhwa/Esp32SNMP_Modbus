@@ -391,10 +391,19 @@ int Q1_Command()
 // Computer : T<n><cr>
 // UPS : Test for <n> minutes.
 int T_Command(int minute){
-    Serial.printf("T%2d\r",minute);
+    String readString;
+    selectPrintf(2, "T\r");
+    Serial.printf("T%02d\r",minute);
     Serial.flush();
+    delay(500);
     Serial.setTimeout(SET_TIMEOUT );
-    String readString = Serial.readStringUntil(0x0d);
+    Serial.printf("T%02d\r",minute);
+    Serial.flush();
+    delay(100);
+    readString = Serial.readStringUntil(0x0d);
+
+    if (readString.length() == 0)
+        return 0;
     return 1;
 }
 int I_Command()

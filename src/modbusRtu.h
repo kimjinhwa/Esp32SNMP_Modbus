@@ -62,7 +62,7 @@ protected:
 class modbusRtu 
 {
 private:
-    uint8_t _modBusID=1;
+    uint8_t _modBusID=2;
 public:
     void setModbusID(uint8_t modBusID){
         _modBusID = modBusID;

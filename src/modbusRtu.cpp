@@ -207,11 +207,11 @@ void modbusRtu::F03(uint8_t *buffer,uint16_t len){
   dataRequestAddress =   buffer[2]<<8 |buffer[3] ;// address 
   requestDataLen =   buffer[4]<<8 |buffer[5] ;// length
 
-  if(dataRequestAddress>59) {
+  if(dataRequestAddress>60) {
     errorPacket(buffer,ILLEGAL_DATA_ADDRESS);
     return;
   }
-  if(requestDataLen>59){
+  if(requestDataLen>60){
     errorPacket(buffer,ILLEGAL_DATA_ADDRESS);
     return;
   } 
@@ -262,6 +262,6 @@ void modbusRtu::F06(uint8_t *buffer,uint16_t len ){
   delay(1);
   Serial2.flush();
   digitalWrite(OP_LED, 0);
-  if(dataRequestAddress)
+  if(dataRequestAddress= 60)
     T_Command(singleDataToWrite);
 };
