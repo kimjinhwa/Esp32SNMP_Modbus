@@ -1,6 +1,15 @@
 #include <Arduino.h>
 #include "upstype.h"
 #include <bitset>
+#include "ModbusServerRTU.h"
+#include "mainGrobaldef.h"
+
+#define USE_MUTEX
+#include <mutex>
+using std::mutex;
+using std::lock_guard;
+
+extern std::mutex dataAccessM;
 /*1P and 3P */
 /*
  1  	  Q1     	  Status Inquiry
@@ -372,19 +381,22 @@ int Q1_Command()
     G1_realtimedata.batteryVoltage = Q1_status.batteryVoltage;
     G1_realtimedata.outputFrequency = Q1_status.inputFrequency;
 
-    ups_modbus_data.Input_r_volt_rms = Q1_status.inputVoltage;
-    ups_modbus_data.Input_s_volt_rms = Q1_status.inputVoltage;
-    ups_modbus_data.Input_t_volt_rms = Q1_status.inputVoltage;
-    ups_modbus_data.Output_r_volt_rms = Q1_status.outputVoltage ;
-    ups_modbus_data.Output_s_volt_rms = Q1_status.outputVoltage ;
-    ups_modbus_data.Output_t_volt_rms = Q1_status.outputVoltage ;
-    ups_modbus_data.Output_u_current_rms = Q1_status.outputCurrent ;
-    ups_modbus_data.Output_v_current_rms = Q1_status.outputCurrent ;
-    ups_modbus_data.Output_w_current_rms = Q1_status.outputCurrent ;
-    ups_modbus_data.Input_frequency= Q1_status.inputFrequency;
-    ups_modbus_data.Bat_volt_rms = Q1_status.batteryVoltage;
-    ups_modbus_data.Battery_Room_Temper = Q1_status.temperature ;
-    ups_modbus_data.Inverter_State = Q1_status.upsStatus;
+    {
+        LOCK_GUARD(errorCntLock, dataAccessM);
+        ups_modbus_data.Input_r_volt_rms = Q1_status.inputVoltage;
+        ups_modbus_data.Input_s_volt_rms = Q1_status.inputVoltage;
+        ups_modbus_data.Input_t_volt_rms = Q1_status.inputVoltage;
+        ups_modbus_data.Output_r_volt_rms = Q1_status.outputVoltage;
+        ups_modbus_data.Output_s_volt_rms = Q1_status.outputVoltage;
+        ups_modbus_data.Output_t_volt_rms = Q1_status.outputVoltage;
+        ups_modbus_data.Output_u_current_rms = Q1_status.outputCurrent;
+        ups_modbus_data.Output_v_current_rms = Q1_status.outputCurrent;
+        ups_modbus_data.Output_w_current_rms = Q1_status.outputCurrent;
+        ups_modbus_data.Input_frequency = Q1_status.inputFrequency;
+        ups_modbus_data.Bat_volt_rms = Q1_status.batteryVoltage;
+        ups_modbus_data.Battery_Room_Temper = Q1_status.temperature;
+        ups_modbus_data.Inverter_State = Q1_status.upsStatus;
+    }
     return 1;
 }
 // Test for specified time period :

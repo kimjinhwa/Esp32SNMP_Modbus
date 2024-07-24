@@ -11,6 +11,7 @@
 #include <RtcDS1302.h>
 #include <esp_heap_caps.h>
 #include <WiFiUDP.h>
+#include <esp_task_wdt.h>
 
 #include <WebSocketsServer.h>
 #include <ArduinoJson.h>
@@ -28,8 +29,11 @@
 #include "main.h"
 #include "megatec.h"
 #include "upstype.h"
-#include "modbusRtu.h"
+#include "mymodbusRtu.h"
+#include "ModbusClientRTU.h"
+#include "ModbusServerRTU.h"
 
+#define WDT_TIMEOUT 120 
 // PCA9557PW, 118
 #define ETH_PHY_TYPE ETH_PHY_LAN8720
 //
@@ -50,7 +54,7 @@
 #define WEBSOCKET_PORT 81
 #define TELNET_PORT 23
 
-modbusRtu rtu485;
+ModbusServerRTU rtu485(2000,OP_LED);
 int8_t debugFlag = 0;
 BluetoothSerial SerialBT;
 uint8_t setOutputDirection = 0;
@@ -1650,10 +1654,11 @@ int EthLan8720Start()
     printf("Eth config failed...\r\n");
   else
     printf("Eth config succeed...\r\n");
+  printf("\r\nconnecting");
   while (!ETH.linkUp())
   {
-    printf("\r\nconnecting...");
-    delay(1000);
+    printf(".");
+    delay(100);
     if (retrycount++ >= 10)
     {
       return -1;
@@ -2293,6 +2298,7 @@ void readInputSerialBT()
 {
   char readBuf[2];
   char readCount = 0;
+  isBTAuthenticated=true;
   if (!isBTAuthenticated)
   {
     SerialBT.println("Please Input passwd: ");
@@ -2419,12 +2425,10 @@ void onBTConnect(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 esp_spp_cb_t callback = NULL;
 #define LED_1 2
 #define LED_2 3
+
 void setup()
 {
   int isEthernetConnect = false;
-  pinMode(OP_LED, OUTPUT);
-  rtu485.modbusInit();
-  readnWriteEEProm();
 #ifdef S115200
   Serial.begin(115200);
 #elif S2400
@@ -2432,6 +2436,18 @@ void setup()
 #else
   Serial.begin(ipAddress_struct.BAUDRATE);
 #endif
+  Serial.println("system start 0");
+  pinMode(OP_LED, OUTPUT);
+  Serial2.begin(9600,SERIAL_8N1,RX2_PIN ,TX2_PIN );//for 485
+  Serial.println("system start 1");
+  rtu485.begin(Serial2,9600,1);
+  Serial.println("system start 2");
+  rtu485.registerWorker(2,READ_HOLD_REGISTER,&FC03);
+  Serial.println("system start 3");
+  rtu485.registerWorker(2,READ_INPUT_REGISTER,&FC03);
+  rtu485.registerWorker(2,WRITE_HOLD_REGISTER,&FC06);
+
+  readnWriteEEProm();
   String macAddress = WiFi.macAddress();
   macAddress.replace(":", "");
   SerialBT.begin("IFTECH_" + macAddress);
@@ -2479,33 +2495,41 @@ void setup()
   webSocket.begin();
   webSocket.onEvent(webSocketEvent);
 
-  xTaskCreate(snmpRequest, "snmptech", 10240, NULL, 1, h_pxSnmp);
+  //xTaskCreate(snmpRequest, "snmptech", 10240, NULL, 1, h_pxSnmp);
+  saveSNMPValues();
   xTaskCreate(megatechRequest, "megatech", 10240, NULL, 1, h_pxMegatech);
-  xTaskCreate(telnetTask, "telnetTask", 10240, NULL, 1, h_pxTelnetTask);
+  //xTaskCreate(telnetTask, "telnetTask", 10240, NULL, 1, h_pxTelnetTask);
 //   // 7168 8192 10240
   cli.parse("user");
 //   // esp_log_level_set("*", ESP_LOG_VERBOSE);
 //  esp_log_level_set("*", ESP_LOG_ERROR);
 //   // esp_log_set_vprintf(telnet_write);
+  esp_task_wdt_init(WDT_TIMEOUT, true);
+  esp_task_wdt_add(NULL);
 }
 
 int interval = 1000;
 unsigned long previousmills = 0;
 int everySecondInterval = 1000;
-unsigned long now;
+unsigned long now=0;
 
 void loop()
 {
+  esp_task_wdt_reset();
   webServer.handleClient();
   webSocket.loop();
-  if(Serial2.available()) rtu485.receiveData();
+  //if(Serial2.available()) rtu485.receiveData();
   if (SerialBT.available()) readInputSerialBT();
   now = millis();
   if ((now - previousmills > everySecondInterval))
   {
     previousmills = now;
   }
-  vTaskDelay(10);
+  vTaskDelay(20);
+  // if(now/1000 > 3600*24){
+  //   esp_restart();  //매일 하루에 한번은 리셋을 하자.
+  //   now = 0;
+  // }
 }
 
 // C:\Users\STELLA\.platformio\packages\framework-arduinoespressif32@3.20006.221224\tools\sdk\esp32\qio_qspi\include\sdkconfig.h

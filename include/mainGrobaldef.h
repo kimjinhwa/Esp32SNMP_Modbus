@@ -1,6 +1,12 @@
 #ifndef MAINGROBALDEF_H
 #define MAINGROBALDEF_H
 
+#define USE_MUTEX
+#include <mutex>
+using std::mutex;
+using std::lock_guard;
+
+
 #ifdef ESP_LOGE
 #undef ESP_LOGE
 #endif
