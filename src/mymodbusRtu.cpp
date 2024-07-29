@@ -239,30 +239,20 @@ ModbusMessage FC04(ModbusMessage request)
 // }
 ModbusMessage FC06(ModbusMessage request)
 {
-   ModbusMessage response;     // response message to be sent back
-   return response;
-  // uint16_t buffer[256];
-  // if(buffer[0]!=_modBusID)return;
-  // byte writeBuf[9];
-  // uint16_t data_pos=0;
-  // uint16_t dataRequestAddress=0;
-  // uint16_t singleDataToWrite=0;
+  uint16_t address;
+  ModbusMessage response; // response message to be sent back
+  uint16_t value;
+  uint16_t sendValue[255];
+  memset(sendValue, 0x00, sizeof(sendValue));
+   request.get(2, address);
+  request.get(4, value);
+  uint16_t writeAddress = (0x00FF & address);
+  if (writeAddress > 61)
+  {
+    response.setError(request.getServerID(), request.getFunctionCode(), ILLEGAL_DATA_ADDRESS);
+    return response;
+  }
+  response.add(request.getServerID(), request.getFunctionCode(),address, value); 
 
-  // dataRequestAddress =   buffer[2]<<8 |buffer[3] ;// address 
-  // singleDataToWrite=   buffer[4]<<8 |buffer[5] ;// length
-
-  // if(dataRequestAddress >  61) {
-  //   //errorPacket(buffer,ILLEGAL_DATA_ADDRESS);
-  //   return;
-  // }
-  // //SendTestCommand(singleDataToWrite);
-  // uint16_t *modbusData =(uint16_t *)&ups_modbus_data;
-  // modbusData[dataRequestAddress] =singleDataToWrite; 
-  // digitalWrite(OP_LED, 1);
-  // Serial2.write(buffer,10);// bug
-  // delay(1);
-  // Serial2.flush();
-  // digitalWrite(OP_LED, 0);
-  // if(dataRequestAddress= 60)
-  //   T_Command(singleDataToWrite);
+  return response;
 };
